@@ -28,13 +28,16 @@ if uploaded_file:
     )
     chunks = splitter.split_documents(documents)
 
-  embeddings = OpenAIEmbeddings(
+# Create embeddings
+    embeddings = OpenAIEmbeddings(
     api_key=st.secrets["OPENAI_API_KEY"]
 )
 
+
     vectorstore = FAISS.from_documents(chunks, embeddings)
 
-   llm = OpenAI(
+# Create LLM
+    llm = OpenAI(
     temperature=0,
     api_key=st.secrets["OPENAI_API_KEY"]
 )
