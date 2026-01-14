@@ -6,53 +6,53 @@ from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain_openai import OpenAIEmbeddings, OpenAI
 
-
 st.title("Document Summarizer & Q&A Bot")
 
+# File uploader
 uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 
 if uploaded_file:
-    # Save uploaded file
+    # Save the uploaded PDF temporarily
     with open("temp.pdf", "wb") as f:
         f.write(uploaded_file.getbuffer())
 
-    # Load PDF
+    # Load PDF into documents
     loader = PyPDFLoader("temp.pdf")
     documents = loader.load()
 
-    # Split text into chunks
+    # Split documents into chunks
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
         chunk_overlap=150
     )
     chunks = splitter.split_documents(documents)
 
-   st.write("API key loaded:", bool(st.secrets.get("OPENAI_API_KEY")))
-# Create embeddings
+    # --- CREATE EMBEDDINGS ---
     embeddings = OpenAIEmbeddings(
-        model="text-embedding-3-small",
-        api_key=st.secrets["OPENAI_API_KEY"]
+        api_key=st.secrets["OPENAI_API_KEY"],  # Make sure this key is correct in Streamlit secrets
+        model="text-embedding-3-small"        # Use an active embedding model
     )
 
-    # Create vector store
+    # --- CREATE VECTOR STORE ---
     vectorstore = FAISS.from_documents(chunks, embeddings)
 
-    # Create LLM
+    # --- CREATE LLM ---
     llm = OpenAI(
-        model="gpt-4o-mini",
         temperature=0,
-        api_key=st.secrets["OPENAI_API_KEY"]
+        api_key=st.secrets["OPENAI_API_KEY"],
+        model="gpt-4o-mini"   # Recommended model, works for Q&A
     )
 
-    # Create QA chain
+    # --- CREATE QA CHAIN ---
     qa = RetrievalQA.from_chain_type(
         llm=llm,
         retriever=vectorstore.as_retriever()
     )
 
-    # Ask question
+    # User input question
     question = st.text_input("Ask a question about the document")
 
     if question:
         answer = qa.run(question)
         st.success(answer)
+
