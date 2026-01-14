@@ -27,7 +27,8 @@ if uploaded_file:
     )
     chunks = splitter.split_documents(documents)
 
-    # Create embeddings
+   st.write("API key loaded:", bool(st.secrets.get("OPENAI_API_KEY")))
+# Create embeddings
     embeddings = OpenAIEmbeddings(
         model="text-embedding-3-small",
         api_key=st.secrets["OPENAI_API_KEY"]
