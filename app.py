@@ -1,8 +1,6 @@
 import streamlit as st
 import os
 
-# Explicitly set OpenAI API key
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -30,10 +28,17 @@ if uploaded_file:
     )
     chunks = splitter.split_documents(documents)
 
-    embeddings = OpenAIEmbeddings()
+  embeddings = OpenAIEmbeddings(
+    api_key=st.secrets["OPENAI_API_KEY"]
+)
+
     vectorstore = FAISS.from_documents(chunks, embeddings)
 
-    llm = OpenAI(temperature=0)
+   llm = OpenAI(
+    temperature=0,
+    api_key=st.secrets["OPENAI_API_KEY"]
+)
+
     qa = RetrievalQA.from_chain_type(
         llm=llm,
         retriever=vectorstore.as_retriever()
