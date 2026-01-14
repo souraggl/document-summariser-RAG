@@ -29,6 +29,7 @@ if uploaded_file:
 
     # Create embeddings
     embeddings = OpenAIEmbeddings(
+        model="text-embedding-3-small",
         api_key=st.secrets["OPENAI_API_KEY"]
     )
 
@@ -37,6 +38,7 @@ if uploaded_file:
 
     # Create LLM
     llm = OpenAI(
+        model="gpt-4o-mini",
         temperature=0,
         api_key=st.secrets["OPENAI_API_KEY"]
     )
