@@ -1,4 +1,8 @@
 import streamlit as st
+import os
+
+# Explicitly set OpenAI API key
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
