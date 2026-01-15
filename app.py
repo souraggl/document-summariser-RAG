@@ -65,29 +65,49 @@ if uploaded_file and api_key and st.session_state.vectorstore is None:
             # Embeddings
             embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
             
-            # Vector Store with Batch Processing
+            # Vector Store with Batch Processing and Retry
             try:
                 # Initialize vector store with first batch
-                batch_size = 5
-                progress_text = "Creating embeddings in batches..."
+                batch_size = 1 # Process one by one for maximum stability
+                progress_text = "Creating embeddings (slow & stable mode)..."
                 my_bar = st.progress(0, text=progress_text)
                 
-                # Create empty vector store first usually requires valid embedding, so we process first batch
-                first_batch = chunks[:batch_size]
-                vectorstore = FAISS.from_documents(first_batch, embeddings)
+                # Helper function for retrying
+                def embed_with_retry(text_chunks, retries=3):
+                    for attempt in range(retries):
+                        try:
+                            return FAISS.from_documents(text_chunks, embeddings)
+                        except Exception as e:
+                            if attempt == retries - 1:
+                                raise e
+                            time.sleep(2 * (attempt + 1)) # Exponential backoff
                 
-                # Process remaining batches
+                # Process first chunk to initialize
+                first_batch = chunks[:1]
+                vectorstore = embed_with_retry(first_batch)
+                
+                # Process remaining chunks
                 import time
                 total_chunks = len(chunks)
-                for i in range(batch_size, total_chunks, batch_size):
+                for i in range(1, total_chunks):
                     # Update progress
                     progress = min(i / total_chunks, 1.0)
-                    my_bar.progress(progress, text=f"Processing chunk {i}/{total_chunks}")
+                    my_bar.progress(progress, text=f"Processing chunk {i+1}/{total_chunks}")
                     
-                    # Process batch
-                    batch = chunks[i:i+batch_size]
-                    vectorstore.add_documents(batch)
-                    time.sleep(1) # Rate limiting
+                    # Process chunk
+                    batch = chunks[i:i+1]
+                    
+                    # Retry logic for adding documents
+                    for attempt in range(3):
+                        try:
+                            vectorstore.add_documents(batch)
+                            break
+                        except Exception as e:
+                            if attempt == 2:
+                                raise e
+                            time.sleep(2 * (attempt + 1))
+                    
+                    time.sleep(0.5) # Small buffer
                 
                 my_bar.empty()
                 st.session_state.vectorstore = vectorstore
@@ -143,5 +163,7 @@ if prompt := st.chat_input("Ask a question about your PDF..."):
                 
                 st.write(answer)
                 st.session_state.messages.append({"role": "assistant", "content": answer})
+
+
 
 
