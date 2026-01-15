@@ -57,20 +57,43 @@ if uploaded_file and api_key and st.session_state.vectorstore is None:
             
             # Split
             text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=800,
-                chunk_overlap=100
+                chunk_size=500,
+                chunk_overlap=50
             )
             chunks = text_splitter.split_documents(documents)
             
             # Embeddings
             embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
             
-            # Vector Store
+            # Vector Store with Batch Processing
             try:
-                st.session_state.vectorstore = FAISS.from_documents(chunks, embeddings)
+                # Initialize vector store with first batch
+                batch_size = 5
+                progress_text = "Creating embeddings in batches..."
+                my_bar = st.progress(0, text=progress_text)
+                
+                # Create empty vector store first usually requires valid embedding, so we process first batch
+                first_batch = chunks[:batch_size]
+                vectorstore = FAISS.from_documents(first_batch, embeddings)
+                
+                # Process remaining batches
+                import time
+                total_chunks = len(chunks)
+                for i in range(batch_size, total_chunks, batch_size):
+                    # Update progress
+                    progress = min(i / total_chunks, 1.0)
+                    my_bar.progress(progress, text=f"Processing chunk {i}/{total_chunks}")
+                    
+                    # Process batch
+                    batch = chunks[i:i+batch_size]
+                    vectorstore.add_documents(batch)
+                    time.sleep(1) # Rate limiting
+                
+                my_bar.empty()
+                st.session_state.vectorstore = vectorstore
                 st.sidebar.success("PDF Processed Successfully!")
             except Exception as e:
-                st.error(f"Error creating embeddings: {str(e)}. This is usually a temporary API issue. Please try again.")
+                st.error(f"Error creating embeddings: {str(e)}. Please try uploading a smaller document or try again later.")
                 st.session_state.vectorstore = None
 
             
@@ -120,4 +143,5 @@ if prompt := st.chat_input("Ask a question about your PDF..."):
                 
                 st.write(answer)
                 st.session_state.messages.append({"role": "assistant", "content": answer})
+
 
