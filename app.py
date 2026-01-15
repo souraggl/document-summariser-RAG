@@ -143,7 +143,7 @@ if prompt := st.chat_input("Ask a question about your PDF..."):
         # Generate response
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                llm = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=api_key, temperature=0.3)
+                llm = ChatGoogleGenerativeAI(model="gemma-3-27b-it", google_api_key=api_key, temperature=0.3)
                 
                 qa_chain = ConversationalRetrievalChain.from_llm(
                     llm=llm,
