@@ -57,8 +57,8 @@ if uploaded_file and api_key and st.session_state.vectorstore is None:
             
             # Split
             text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=1000,
-                chunk_overlap=200
+                chunk_size=800,
+                chunk_overlap=100
             )
             chunks = text_splitter.split_documents(documents)
             
@@ -66,8 +66,13 @@ if uploaded_file and api_key and st.session_state.vectorstore is None:
             embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
             
             # Vector Store
-            st.session_state.vectorstore = FAISS.from_documents(chunks, embeddings)
-            st.sidebar.success("PDF Processed Successfully!")
+            try:
+                st.session_state.vectorstore = FAISS.from_documents(chunks, embeddings)
+                st.sidebar.success("PDF Processed Successfully!")
+            except Exception as e:
+                st.error(f"Error creating embeddings: {str(e)}. This is usually a temporary API issue. Please try again.")
+                st.session_state.vectorstore = None
+
             
             # Add initial assistant message
             st.session_state.messages.append({"role": "assistant", "content": "I've read your document. What would you like to know?"})
