@@ -63,7 +63,7 @@ if uploaded_file and api_key and st.session_state.vectorstore is None:
             chunks = text_splitter.split_documents(documents)
             
             # Embeddings
-            embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
+            embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-004", google_api_key=api_key)
             
             # Vector Store with Batch Processing and Retry
             try:
@@ -80,7 +80,7 @@ if uploaded_file and api_key and st.session_state.vectorstore is None:
                         except Exception as e:
                             if attempt == retries - 1:
                                 raise e
-                            time.sleep(2 * (attempt + 1)) # Exponential backoff
+                            time.sleep(5 * (attempt + 1)) # Exponential backoff
                 
                 # Process first chunk to initialize
                 first_batch = chunks[:1]
@@ -107,7 +107,7 @@ if uploaded_file and api_key and st.session_state.vectorstore is None:
                                 raise e
                             time.sleep(2 * (attempt + 1))
                     
-                    time.sleep(0.5) # Small buffer
+                    time.sleep(5.5) # Small buffer
                 
                 my_bar.empty()
                 st.session_state.vectorstore = vectorstore
