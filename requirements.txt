@@ -1,11 +1,10 @@
 streamlit>=1.30.0
-
 langchain==0.1.16
 langchain-community==0.0.32
-langchain-openai==0.0.8
-
-openai>=1.12.0
+langchain-google-genai
+google-generativeai
 faiss-cpu
 pypdf
 tiktoken
+python-dotenv
 
