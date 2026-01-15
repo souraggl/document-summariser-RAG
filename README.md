@@ -1,8 +1,6 @@
-# document-summariser-RAG
-A tool to summarise the uploaded docs and answer from them
- PDF Summarizer & Chat with Gemini
+# PDF Summarizer & Chat with Gemini
 
-#This is a Streamlit application that allows users to upload a PDF document and chat with it (ask questions, get summaries) using Google's Gemini Pro model.
+This is a Streamlit application that allows users to upload a PDF document and chat with it (ask questions, get summaries) using Google's Gemini Pro model.
 
 ## Features
 - **Upload PDF**: Easily upload any PDF document.
@@ -35,4 +33,3 @@ A tool to summarise the uploaded docs and answer from them
 - Enter your API Key in the sidebar.
 - Upload a PDF file.
 - Start chatting!
-
